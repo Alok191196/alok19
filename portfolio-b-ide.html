@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alok Kumar Singh — IDE Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1e1e1e;
+    --sidebar-bg: #252526;
+    --tab-bg: #2d2d2d;
+    --active-tab: #1e1e1e;
+    --border: #3e3e42;
+    --text: #cccccc;
+    --text-dim: #858585;
+    --text-bright: #e8e8e8;
+    --accent: #007acc;
+    --keyword: #569cd6;
+    --type: #4ec9b0;
+    --string: #ce9178;
+    --number: #b5cea8;
+    --comment: #6a9955;
+    --variable: #9cdcfe;
+    --function: #dcdcaa;
+    --orange: #e8a427;
+    --error: #f44747;
+    --warning: #cca700;
+    --success: #89d185;
+    --line-num: #858585;
+    --line-highlight: #2a2d2e;
+    --minimap: rgba(255,255,255,0.05);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  /* IDE Layout */
+  .ide {
+    display: grid;
+    grid-template-rows: 32px 36px 1fr 24px;
+    height: 100vh;
+  }
+
+  /* Menu Bar */
+  .menu-bar {
+    background: #323233;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .menu-bar .dots { display: flex; gap: 6px; margin-right: 12px; }
+  .menu-bar .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .menu-bar .dot.r { background: #ff5f56; }
+  .menu-bar .dot.y { background: #ffbd2e; }
+  .menu-bar .dot.g { background: #27c93f; }
+
+  .menu-bar .menu-items {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  .menu-bar .menu-items span:hover { color: var(--text); cursor: pointer; }
+
+  .menu-bar .title {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  /* Tab Bar */
+  .tab-bar {
+    background: var(--tab-bg);
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: color 0.2s;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  .tab:hover { color: var(--text); }
+
+  .tab.active {
+    background: var(--active-tab);
+    color: var(--text-bright);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  .tab .icon { font-size: 14px; }
+
+  /* Main Area */
+  .main {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    overflow: hidden;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .sidebar-header {
+    padding: 8px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 600;
+  }
+
+  .tree-item {
+    padding: 3px 8px 3px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s;
+  }
+
+  .tree-item:hover { background: rgba(255,255,255,0.04); }
+  .tree-item.active { background: rgba(0,122,204,0.15); color: var(--text-bright); }
+  .tree-item .arrow { color: var(--text-dim); font-size: 10px; width: 14px; }
+  .tree-item .file-icon { font-size: 14px; }
+  .tree-item.folder { color: var(--orange); }
+
+  .tree-children { padding-left: 16px; }
+
+  /* Editor */
+  .editor {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    position: relative;
+  }
+
+  .editor-content {
+    padding: 12px 0;
+  }
+
+  /* Tab content panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Code lines */
+  .line {
+    display: flex;
+    padding: 0 16px 0 0;
+    min-height: 22px;
+    align-items: flex-start;
+    transition: background 0.15s;
+  }
+
+  .line:hover { background: var(--line-highlight); }
+
+  .line-num {
+    width: 50px;
+    text-align: right;
+    color: var(--line-num);
+    padding-right: 16px;
+    user-select: none;
+    flex-shrink: 0;
+    font-size: 12px;
+    line-height: 22px;
+  }
+
+  .line-content {
+    flex: 1;
+    line-height: 22px;
+  }
+
+  .indent1 { padding-left: 24px; }
+  .indent2 { padding-left: 48px; }
+  .indent3 { padding-left: 72px; }
+
+  .kw { color: var(--keyword); }
+  .ty { color: var(--type); }
+  .str { color: var(--string); }
+  .num { color: var(--number); }
+  .cm { color: var(--comment); font-style: italic; }
+  .vr { color: var(--variable); }
+  .fn { color: var(--function); }
+  .op { color: var(--text); }
+  .an { color: #dcdcaa; }
+  .su { color: var(--success); }
+
+  /* Rich content in editor */
+  .editor-card {
+    margin: 8px 16px 8px 50px;
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    transition: border-color 0.3s;
+  }
+
+  .editor-card:hover { border-color: var(--accent); }
+
+  .editor-card h4 {
+    color: var(--text-bright);
+    font-size: 14px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .editor-card .subtitle {
+    color: var(--accent);
+    font-size: 12px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    margin-bottom: 2px;
+  }
+
+  .editor-card .period {
+    color: var(--text-dim);
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .editor-card ul {
+    padding-left: 16px;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .editor-card li::marker { color: var(--accent); }
+
+  .editor-card .highlight { color: var(--number); font-weight: 500; }
+
+  /* Skills pills in editor */
+  .editor-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 12px 50px;
+    padding-right: 16px;
+  }
+
+  .editor-skills .pill {
+    background: rgba(0,122,204,0.1);
+    border: 1px solid rgba(0,122,204,0.25);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    transition: background 0.2s;
+  }
+
+  .editor-skills .pill:hover {
+    background: rgba(0,122,204,0.2);
+  }
+
+  /* Project cards grid */
+  .project-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 8px 16px 8px 50px;
+    padding-right: 16px;
+  }
+
+  .proj-card {
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+
+  .proj-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .proj-card .name { color: var(--text-bright); font-weight: 500; font-size: 13px; }
+  .proj-card .desc { color: var(--text-dim); font-size: 11px; margin: 4px 0 8px; }
+  .proj-card .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .proj-card .tags span {
+    background: rgba(78,201,176,0.1);
+    color: var(--type);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+  .proj-card .store-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 11px;
+  }
+  .proj-card .store-link:hover { color: var(--type); }
+
+  /* Contact grid */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 8px 16px 8px 50px;
+  }
+
+  .contact-item {
+    font-size: 12px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  .contact-item a { color: var(--accent); text-decoration: none; }
+  .contact-item a:hover { color: var(--type); }
+  .contact-item .label { color: var(--text-dim); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Status Bar */
+  .status-bar {
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    font-size: 11px;
+    color: #fff;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  .status-bar .left, .status-bar .right { display: flex; gap: 16px; align-items: center; }
+  .status-bar .sep { opacity: 0.4; }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .menu-bar .menu-items { display: none; }
+    .project-grid { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="ide">
+
+  <!-- Menu Bar -->
+  <div class="menu-bar">
+    <div class="dots">
+      <div class="dot r"></div>
+      <div class="dot y"></div>
+      <div class="dot g"></div>
+    </div>
+    <div class="menu-items">
+      <span>File</span><span>Edit</span><span>View</span><span>Run</span><span>Help</span>
+    </div>
+    <div class="title">Alok Kumar Singh — Portfolio IDE</div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="showTab('about')"><span class="icon">📄</span> About.kt</div>
+    <div class="tab" onclick="showTab('experience')"><span class="icon">📄</span> Experience.kt</div>
+    <div class="tab" onclick="showTab('projects')"><span class="icon">📄</span> Projects.kt</div>
+    <div class="tab" onclick="showTab('skills')"><span class="icon">📄</span> Skills.kt</div>
+    <div class="tab" onclick="showTab('contact')"><span class="icon">📄</span> Contact.kt</div>
+  </div>
+
+  <!-- Main Area -->
+  <div class="main">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">Explorer</div>
+
+      <div class="tree-item folder" onclick="this.querySelector('.arrow').textContent = this.querySelector('.arrow').textContent === '▼' ? '▶' : '▼'">
+        <span class="arrow">▼</span>
+        <span>📁</span> src/main/kotlin
+      </div>
+      <div class="tree-children">
+        <div class="tree-item active" onclick="showTab('about')">
+          <span class="arrow"></span>
+          <span class="file-icon">📄</span> About.kt
+        </div>
+        <div class="tree-item" onclick="showTab('experience')">
+          <span class="arrow"></span>
+          <span class="file-icon">📄</span> Experience.kt
+        </div>
+        <div class="tree-item" onclick="showTab('projects')">
+          <span class="arrow"></span>
+          <span class="file-icon">📄</span> Projects.kt
+        </div>
+        <div class="tree-item" onclick="showTab('skills')">
+          <span class="arrow"></span>
+          <span class="file-icon">📄</span> Skills.kt
+        </div>
+        <div class="tree-item" onclick="showTab('contact')">
+          <span class="arrow"></span>
+          <span class="file-icon">📄</span> Contact.kt
+        </div>
+      </div>
+
+      <div class="tree-item folder">
+        <span class="arrow">▶</span>
+        <span>📁</span> res/
+      </div>
+      <div class="tree-item folder">
+        <span class="arrow">▶</span>
+        <span>📁</span> test/
+      </div>
+      <div class="tree-item" style="margin-top:8px;">
+        <span class="arrow"></span>
+        <span>⚙️</span> build.gradle.kts
+      </div>
+      <div class="tree-item">
+        <span class="arrow"></span>
+        <span>📋</span> README.md
+      </div>
+    </div>
+
+    <!-- Editor Area -->
+    <div class="editor">
+
+      <!-- About.kt -->
+      <div class="panel active" id="panel-about">
+        <div class="editor-content">
+          <div class="line"><span class="line-num">1</span><span class="line-content"><span class="kw">package</span> com.alok.portfolio</span></div>
+          <div class="line"><span class="line-num">2</span><span class="line-content"></span></div>
+          <div class="line"><span class="line-num">3</span><span class="line-content"><span class="cm">/**</span></div>
+          <div class="line"><span class="line-num">4</span><span class="line-content"><span class="cm"> * Senior Android Developer with 6+ years of experience</span></div>
+          <div class="line"><span class="line-num">5</span><span class="line-content"><span class="cm"> * building high-performance fintech applications serving 1M+ users.</span></div>
+          <div class="line"><span class="line-num">6</span><span class="line-content"><span class="cm"> */</span></div>
+          <div class="line"><span class="line-num">7</span><span class="line-content"><span class="an">@GoogleCertified</span></span></div>
+          <div class="line"><span class="line-num">8</span><span class="line-content"><span class="kw">class</span> <span class="ty">AlokKumarSingh</span> : <span class="ty">Developer</span>() {</span></div>
+          <div class="line"><span class="line-num">9</span><span class="line-content"></span></div>
+          <div class="line"><span class="line-num">10</span><span class="line-content indent1"><span class="kw">val</span> <span class="vr">name</span> = <span class="str">"Alok Kumar Singh"</span></span></div>
+          <div class="line"><span class="line-num">11</span><span class="line-content indent1"><span class="kw">val</span> <span class="vr">title</span> = <span class="str">"Senior Android Developer"</span></span></div>
+          <div class="line"><span class="line-num">12</span><span class="line-content indent1"><span class="kw">val</span> <span class="vr">experience</span> = <span class="num">6</span> <span class="cm">// years and counting</span></span></div>
+          <div class="line"><span class="line-num">13</span><span class="line-content indent1"><span class="kw">val</span> <span class="vr">location</span> = <span class="str">"Bengaluru, India"</span></span></div>
+          <div class="line"><span class="line-num">14</span><span class="line-content"></span></div>
+          <div class="line"><span class="line-num">15</span><span class="line-content indent1"><span class="kw">val</span> <span class="vr">metrics</span> = <span class="fn">mapOf</span>(</span></div>
+          <div class="line"><span class="line-num">16</span><span class="line-content indent2"><span class="str">"crashFreeRate"</span> <span class="op">to</span> <span class="str">"95% → 99.33%"</span>,</span></div>
+          <div class="line"><span class="line-num">17</span><span class="line-content indent2"><span class="str">"usersServed"</span> <span class="op">to</span> <span class="str">"1,000,000+"</span>,</span></div>
+          <div class="line"><span class="line-num">18</span><span class="line-content indent2"><span class="str">"deployReduction"</span> <span class="op">to</span> <span class="str">"70%"</span>,</span></div>
+          <div class="line"><span class="line-num">19</span><span class="line-content indent2"><span class="str">"notifDelivery"</span> <span class="op">to</span> <span class="str">"99.99%"</span>,</span></div>
+          <div class="line"><span class="line-num">20</span><span class="line-content indent2"><span class="str">"productivity"</span> <span class="op">to</span> <span class="str">"3-5x (AI-assisted)"</span></span></div>
+          <div class="line"><span class="line-num">21</span><span class="line-content indent1">)</span></div>
+          <div class="line"><span class="line-num">22</span><span class="line-content"></span></div>
+          <div class="line"><span class="line-num">23</span><span class="line-content indent1"><span class="kw">val</span> <span class="vr">certifications</span> = <span class="fn">listOf</span>(</span></div>
+          <div class="line"><span class="line-num">24</span><span class="line-content indent2"><span class="str">"Google Associate Android Developer"</span>,</span></div>
+          <div class="line"><span class="line-num">25</span><span class="line-content indent2"><span class="str">"HackerRank Problem Solving"</span></span></div>
+          <div class="line"><span class="line-num">26</span><span class="line-content indent1">)</span></div>
+          <div class="line"><span class="line-num">27</span><span class="line-content"></span></div>
+          <div class="line"><span class="line-num">28</span><span class="line-content indent1"><span class="kw">val</span> <span class="vr">education</span> = <span class="ty">Degree</span>(</span></div>
+          <div class="line"><span class="line-num">29</span><span class="line-content indent2"><span class="vr">type</span> = <span class="str">"B.Tech"</span>,</span></div>
+          <div class="line"><span class="line-num">30</span><span class="line-content indent2"><span class="vr">institute</span> = <span class="str">"Pranveer Singh Institute of Technology"</span>,</span></div>
+          <div class="line"><span class="line-num">31</span><span class="line-content indent2"><span class="vr">period</span> = <span class="str">"2014 — 2018"</span></span></div>
+          <div class="line"><span class="line-num">32</span><span class="line-content indent1">)</span></div>
+          <div class="line"><span class="line-num">33</span><span class="line-content">}</span></div>
+        </div>
+      </div>
+
+      <!-- Experience.kt -->
+      <div class="panel" id="panel-experience">
+        <div class="editor-content">
+          <div class="line"><span class="line-num">1</span><span class="line-content"><span class="kw">package</span> com.alok.portfolio</span></div>
+          <div class="line"><span class="line-num">2</span><span class="line-content"></span></div>
+          <div class="line"><span class="line-num">3</span><span class="line-content"><span class="kw">val</span> <span class="vr">experience</span> = <span class="fn">listOf</span>(</span></div>
+          <div class="line"><span class="line-num">4</span><span class="line-content"></span></div>
+
+          <div class="editor-card">
+            <h4>Senior Android Developer</h4>
+            <div class="subtitle">Punch</div>
+            <div class="period">Apr 2023 — Present</div>
+            <ul>
+              <li>Built single-screen trading app + real-time charting for <span class="highlight">1M+</span> users</li>
+              <li>Led end-to-end: architecture → Compose → Play Store release</li>
+              <li>Improved crash-free rate <span class="highlight">95% → 99.33%</span></li>
+              <li>Migrated legacy app to KMM — shared logic across Android & iOS</li>
+              <li>Achieved <span class="highlight">3-5x</span> productivity with Claude Code & Copilot</li>
+              <li>Mentored 4-5 junior devs, reviewed 10-15 PRs/week</li>
+            </ul>
+          </div>
+
+          <div class="editor-card">
+            <h4>Android Developer</h4>
+            <div class="subtitle">Punch</div>
+            <div class="period">Jun 2020 — Mar 2023</div>
+            <ul>
+              <li>Notification deliverability <span class="highlight">90% → 99.99%</span></li>
+              <li>Shipped referral program for user acquisition & retention</li>
+              <li>Automated CI/CD with Jenkins — <span class="highlight">70% less</span> deployment effort</li>
+            </ul>
+          </div>
+
+          <div class="editor-card">
+            <h4>Android Developer</h4>
+            <div class="subtitle">Cashify</div>
+            <div class="period">Feb 2020 — May 2020</div>
+            <ul>
+              <li>Built Profile module — personal info, addresses, photos</li>
+              <li>Device diagnostics: Bluetooth, Wi-Fi, SIM detection</li>
+              <li>Improved stability via systematic debugging</li>
+            </ul>
+          </div>
+
+          <div class="editor-card">
+            <h4>Android Developer Trainee</h4>
+            <div class="subtitle">MountBlue Technologies</div>
+            <div class="period">Nov 2019 — Jan 2020</div>
+            <ul>
+              <li>Intensive Android bootcamp — Java, MVVM, Retrofit, Dagger</li>
+              <li>Built CricBuzz clone & Movies DB app</li>
+            </ul>
+          </div>
+
+          <div class="line"><span class="line-num">5</span><span class="line-content">)</span></div>
+        </div>
+      </div>
+
+      <!-- Projects.kt -->
+      <div class="panel" id="panel-projects">
+        <div class="editor-content">
+          <div class="line"><span class="line-num">1</span><span class="line-content"><span class="kw">package</span> com.alok.portfolio</span></div>
+          <div class="line"><span class="line-num">2</span><span class="line-content"></span></div>
+          <div class="line"><span class="line-num">3</span><span class="line-content"><span class="cm">// Featured projects on Play Store</span></div>
+          <div class="line"><span class="line-num">4</span><span class="line-content"><span class="kw">val</span> <span class="vr">projects</span> = <span class="fn">listOf</span>(</span></div>
+
+          <div class="project-grid">
+            <div class="proj-card">
+              <div class="name">Trading App</div>
+              <div class="desc">Single-screen trading with real-time financial charts. 1M+ users.</div>
+              <div class="tags"><span>Compose</span><span>Hilt</span><span>MVVM</span><span>Kotlin</span></div>
+              <a class="store-link" href="#">▶ Play Store →</a>
+            </div>
+            <div class="proj-card">
+              <div class="name">Analysis App</div>
+              <div class="desc">Financial analysis with 99.99% notification reliability.</div>
+              <div class="tags"><span>KMM</span><span>Firebase</span><span>FCM</span></div>
+              <a class="store-link" href="#">▶ Play Store →</a>
+            </div>
+            <div class="proj-card">
+              <div class="name">Cashify</div>
+              <div class="desc">Profile & device diagnostics for recommerce.</div>
+              <div class="tags"><span>MVVM</span><span>Retrofit</span><span>Room</span></div>
+              <a class="store-link" href="#">▶ Play Store →</a>
+            </div>
+            <div class="proj-card">
+              <div class="name">CricBuzz Clone</div>
+              <div class="desc">Live cricket scores — bootcamp capstone.</div>
+              <div class="tags"><span>Java</span><span>Dagger</span><span>Paging</span></div>
+              <a class="store-link" href="#">▶ GitHub →</a>
+            </div>
+          </div>
+
+          <div class="line"><span class="line-num">5</span><span class="line-content">)</span></div>
+        </div>
+      </div>
+
+      <!-- Skills.kt -->
+      <div class="panel" id="panel-skills">
+        <div class="editor-content">
+          <div class="line"><span class="line-num">1</span><span class="line-content"><span class="kw">package</span> com.alok.portfolio</span></div>
+          <div class="line"><span class="line-num">2</span><span class="line-content"></span></div>
+          <div class="line"><span class="line-num">3</span><span class="line-content"><span class="cm">// Languages</span></div>
+          <div class="editor-skills"><span class="pill">Kotlin</span><span class="pill">Java</span></div>
+          <div class="line"><span class="line-num">4</span><span class="line-content"><span class="cm">// Android</span></div>
+          <div class="editor-skills"><span class="pill">Android SDK</span><span class="pill">Jetpack Compose</span><span class="pill">KMM</span><span class="pill">Material Design</span><span class="pill">Coroutines</span><span class="pill">Kotlin Flow</span></div>
+          <div class="line"><span class="line-num">5</span><span class="line-content"><span class="cm">// Architecture</span></div>
+          <div class="editor-skills"><span class="pill">MVVM</span><span class="pill">Clean Architecture</span><span class="pill">Design Patterns</span></div>
+          <div class="line"><span class="line-num">6</span><span class="line-content"><span class="cm">// Libraries & Tools</span></div>
+          <div class="editor-skills"><span class="pill">Hilt</span><span class="pill">Ktor</span><span class="pill">Firebase</span><span class="pill">Crashlytics</span><span class="pill">Analytics</span><span class="pill">FCM</span><span class="pill">Gradle</span><span class="pill">Git</span></div>
+          <div class="line"><span class="line-num">7</span><span class="line-content"><span class="cm">// Testing</span></div>
+          <div class="editor-skills"><span class="pill">JUnit</span><span class="pill">Espresso</span><span class="pill">Mockito</span><span class="pill">TDD</span></div>
+          <div class="line"><span class="line-num">8</span><span class="line-content"><span class="cm">// AI & Productivity</span></div>
+          <div class="editor-skills"><span class="pill">Claude Code</span><span class="pill">GitHub Copilot</span><span class="pill">Codex</span><span class="pill">AI Workflows</span></div>
+        </div>
+      </div>
+
+      <!-- Contact.kt -->
+      <div class="panel" id="panel-contact">
+        <div class="editor-content">
+          <div class="line"><span class="line-num">1</span><span class="line-content"><span class="kw">package</span> com.alok.portfolio</span></div>
+          <div class="line"><span class="line-num">2</span><span class="line-content"></span></div>
+          <div class="line"><span class="line-num">3</span><span class="line-content"><span class="kw">object</span> <span class="ty">Contact</span> {</span></div>
+          <div class="line"><span class="line-num">4</span><span class="line-content"></span></div>
+
+          <div class="contact-grid">
+            <div class="contact-item">
+              <div class="label">Email</div>
+              <a href="mailto:aloksingh191196@gmail.com">aloksingh191196@gmail.com</a>
+            </div>
+            <div class="contact-item">
+              <div class="label">Phone</div>
+              +91 7007405580
+            </div>
+            <div class="contact-item">
+              <div class="label">Location</div>
+              Bengaluru, India
+            </div>
+            <div class="contact-item">
+              <div class="label">LinkedIn</div>
+              <a href="https://www.linkedin.com/in/aloks19" target="_blank">linkedin.com/in/aloks19</a>
+            </div>
+          </div>
+
+          <div class="line"><span class="line-num">5</span><span class="line-content">}</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="left">
+      <span>📧 aloksingh191196@gmail.com</span>
+      <span class="sep">|</span>
+      <span>📱 +91 7007405580</span>
+      <span class="sep">|</span>
+      <span>🔗 linkedin.com/in/aloks19</span>
+    </div>
+    <div class="right">
+      <span>Kotlin</span>
+      <span class="sep">|</span>
+      <span>UTF-8</span>
+      <span class="sep">|</span>
+      <span>Bengaluru, India</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tree-item:not(.folder)').forEach(t => t.classList.remove('active'));
+
+  document.getElementById('panel-' + name).classList.add('active');
+
+  const tabs = document.querySelectorAll('.tab');
+  const map = { about: 0, experience: 1, projects: 2, skills: 3, contact: 4 };
+  if (map[name] !== undefined) tabs[map[name]].classList.add('active');
+
+  const treeItems = document.querySelectorAll('.tree-children .tree-item');
+  if (map[name] !== undefined) treeItems[map[name]].classList.add('active');
+}
+</script>
+</body>
+</html>

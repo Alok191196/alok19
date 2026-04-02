@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alok Kumar Singh — Google Play Developer Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+  :root {
+    --bg: #131314;
+    --surface: #1f1f1f;
+    --surface2: #282828;
+    --surface3: #313131;
+    --outline: #3c3c3c;
+    --outline-dim: #2a2a2a;
+    --primary: #a8c7fa;
+    --primary-container: #004a77;
+    --on-primary: #003258;
+    --secondary: #c2e7ff;
+    --tertiary: #efb8c8;
+    --green: #81c995;
+    --green-container: #0f3b1f;
+    --text: #c4c7c5;
+    --text-bright: #e3e3e3;
+    --text-dim: #8e918f;
+    --star: #f4b400;
+    --play-blue: #4285f4;
+    --play-green: #0f9d58;
+    --play-yellow: #f4b400;
+    --play-red: #db4437;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 100px;
+    --sans: 'Google Sans', 'Roboto', system-ui, sans-serif;
+    --mono: 'Roboto Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* === TOP BAR (Google Play style) === */
+  .play-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--outline-dim);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+  }
+
+  .play-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .play-logo svg { width: 24px; height: 24px; }
+
+  .play-logo span {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-bright);
+    letter-spacing: -0.2px;
+  }
+
+  .play-logo .dim { color: var(--text-dim); font-weight: 400; margin-left: 2px; }
+
+  /* Search bar */
+  .play-search {
+    flex: 1;
+    max-width: 540px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .play-search input {
+    width: 100%;
+    background: var(--surface);
+    border: none;
+    border-radius: var(--radius-full);
+    padding: 10px 16px 10px 44px;
+    color: var(--text-bright);
+    font-family: var(--sans);
+    font-size: 14px;
+    outline: none;
+    transition: background 0.2s;
+  }
+
+  .play-search input:focus { background: var(--surface2); }
+  .play-search input::placeholder { color: var(--text-dim); }
+
+  .play-search .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 20px;
+  }
+
+  .play-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4285f4, #34a853);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* === SIDEBAR NAV === */
+  .play-layout {
+    display: flex;
+    margin-top: 64px;
+  }
+
+  .play-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    padding: 12px 12px 24px;
+    position: fixed;
+    top: 64px;
+    bottom: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--outline-dim) transparent;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: var(--radius-full);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    margin-bottom: 2px;
+  }
+
+  .sidebar-item:hover { background: var(--surface); }
+
+  .sidebar-item.active {
+    background: rgba(168,199,250,0.12);
+    color: var(--primary);
+  }
+
+  .sidebar-item .material-icons-round { font-size: 22px; }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--outline-dim);
+    margin: 8px 16px;
+  }
+
+  .sidebar-label {
+    padding: 16px 16px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* === MAIN CONTENT === */
+  .play-main {
+    flex: 1;
+    margin-left: 240px;
+    padding: 24px 32px 48px;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* === DEVELOPER HEADER (like app page) === */
+  .dev-header {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--outline-dim);
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .dev-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #1a73e8, #34a853);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(26,115,232,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dev-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+    background-size: 200% 200%;
+    animation: iconShimmer 3s ease infinite;
+  }
+
+  @keyframes iconShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .dev-icon svg { width: 52px; height: 52px; position: relative; z-index: 1; }
+
+  .dev-info { flex: 1; }
+
+  .dev-name {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text-bright);
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dev-name .verified {
+    color: var(--play-blue);
+    font-size: 20px;
+  }
+
+  .dev-subtitle {
+    font-size: 15px;
+    color: var(--primary);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .dev-desc {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    max-width: 600px;
+    margin-bottom: 14px;
+  }
+
+  .dev-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .dev-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--outline);
+    color: var(--text);
+  }
+
+  .dev-badge .material-icons-round { font-size: 14px; color: var(--green); }
+
+  .dev-stats {
+    display: flex;
+    gap: 28px;
+  }
+
+  .dev-stat {
+    text-align: center;
+  }
+
+  .dev-stat .val {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .dev-stat .lbl {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .dev-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 24px;
+    border-radius: var(--radius-full);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+
+  .play-btn.filled {
+    background: var(--primary);
+    color: var(--on-primary);
+  }
+
+  .play-btn.filled:hover {
+    box-shadow: 0 2px 8px rgba(168,199,250,0.3);
+    filter: brightness(1.1);
+  }
+
+  .play-btn.outlined {
+    background: transparent;
+    border: 1px solid var(--outline);
+    color: var(--primary);
+  }
+
+  .play-btn.outlined:hover { background: rgba(168,199,250,0.08); }
+
+  .play-btn .material-icons-round { font-size: 18px; }
+
+  /* === SECTION HEADERS === */
+  .section-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    margin-top: 36px;
+  }
+
+  .section-row:first-child { margin-top: 0; }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-bright);
+  }
+
+  .section-action {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    transition: background 0.2s;
+  }
+
+  .section-action:hover { background: rgba(168,199,250,0.08); }
+
+  /* === METRICS ROW (like ratings bar) === */
+  .metrics-bar {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1px;
+    background: var(--outline-dim);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .metric-item {
+    background: var(--surface);
+    padding: 18px 12px;
+    text-align: center;
+    transition: background 0.3s;
+  }
+
+  .metric-item:hover { background: var(--surface2); }
+
+  .metric-item .m-val {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-bright);
+    display: block;
+  }
+
+  .metric-item .m-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .metric-item .m-delta {
+    font-size: 11px;
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  /* === APP LIST (like Play Store app cards) === */
+  .app-row {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 8px;
+    margin: 0 -8px;
+    padding: 0 8px;
+  }
+
+  .app-row::-webkit-scrollbar { display: none; }
+
+  .app-card {
+    flex: 0 0 200px;
+    scroll-snap-align: start;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+
+  .app-card:hover { transform: scale(1.03); }
+
+  .app-card-img {
+    width: 200px;
+    height: 112px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .app-card-img .bg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    position: relative;
+  }
+
+  .app-card-img .bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  }
+
+  .app-card .app-meta {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .app-card .app-mini-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .app-card .app-text .name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-bright);
+    line-height: 1.3;
+  }
+
+  .app-card .app-text .dev {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .app-card .app-text .rating {
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .app-card .app-text .rating .star { color: var(--star); font-size: 12px; }
+
+  /* === SKILLS as "Categories" chips === */
+  .category-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--outline-dim);
+    border-radius: var(--radius-full);
+    padding: 8px 18px 8px 8px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .cat-chip:hover {
+    background: var(--surface2);
+    border-color: var(--outline);
+    transform: translateY(-2px);
+  }
+
+  .cat-chip .chip-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .cat-chip .chip-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-bright);
+  }
+
+  /* Skill category groups */
+  .skill-section {
+    margin-bottom: 20px;
+  }
+
+  .skill-section-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+
+  /* === EXPERIENCE — Review style cards === */
+  .review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .review-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    transition: background 0.2s;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: reviewSlide 0.5s ease forwards;
+  }
+
+  .review-card:nth-child(1) { animation-delay: 0.1s; }
+  .review-card:nth-child(2) { animation-delay: 0.2s; }
+  .review-card:nth-child(3) { animation-delay: 0.3s; }
+  .review-card:nth-child(4) { animation-delay: 0.4s; }
+
+  @keyframes reviewSlide {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .review-card:hover { background: var(--surface2); }
+
+  .review-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .review-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .review-card:nth-child(1) .review-avatar { background: linear-gradient(135deg, #1a73e8, #34a853); }
+  .review-card:nth-child(2) .review-avatar { background: linear-gradient(135deg, #4285f4, #7baaf7); }
+  .review-card:nth-child(3) .review-avatar { background: linear-gradient(135deg, #ea4335, #fbbc04); }
+  .review-card:nth-child(4) .review-avatar { background: linear-gradient(135deg, #ff6d00, #ffc107); }
+
+  .review-info .company {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-bright);
+  }
+
+  .review-info .role {
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 500;
+  }
+
+  .review-period {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+
+  .review-stars {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 10px;
+  }
+
+  .review-stars .material-icons-round {
+    font-size: 16px;
+    color: var(--star);
+  }
+
+  .review-body ul {
+    padding-left: 16px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .review-body li::marker { color: var(--primary); }
+  .review-body .hl { color: var(--green); font-family: var(--mono); font-weight: 500; font-size: 12px; }
+
+  .review-helpful {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .review-helpful span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-full);
+    transition: background 0.2s;
+  }
+
+  .review-helpful span:hover { background: var(--surface3); }
+  .review-helpful .material-icons-round { font-size: 16px; }
+
+  /* === DATA SAFETY / Contact === */
+  .safety-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+  }
+
+  .safety-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--outline-dim);
+  }
+
+  .safety-row:last-child { border-bottom: none; }
+
+  .safety-row .s-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .safety-row .s-icon .material-icons-round { font-size: 20px; color: var(--primary); }
+
+  .safety-row .s-label {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .safety-row .s-value {
+    font-size: 14px;
+    color: var(--text-bright);
+    font-weight: 500;
+  }
+
+  .safety-row a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+
+  .safety-row a:hover { opacity: 0.8; }
+
+  /* === EDUCATION — "About this developer" === */
+  .about-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+  }
+
+  .about-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+  }
+
+  .about-row .material-icons-round { color: var(--primary); font-size: 22px; }
+  .about-row .a-label { font-size: 12px; color: var(--text-dim); }
+  .about-row .a-value { font-size: 14px; color: var(--text-bright); font-weight: 500; }
+
+  /* === RATING BREAKDOWN BAR === */
+  .rating-breakdown {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    margin-bottom: 8px;
+  }
+
+  .rating-big {
+    text-align: center;
+    flex-shrink: 0;
+    min-width: 100px;
+  }
+
+  .rating-big .number {
+    font-size: 52px;
+    font-weight: 500;
+    color: var(--text-bright);
+    line-height: 1;
+  }
+
+  .rating-big .stars {
+    display: flex;
+    justify-content: center;
+    gap: 1px;
+    margin: 6px 0 4px;
+  }
+
+  .rating-big .stars .material-icons-round { font-size: 14px; color: var(--star); }
+
+  .rating-big .count {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .rating-bars { flex: 1; }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .bar-row .bar-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    width: 8px;
+    text-align: right;
+  }
+
+  .bar-row .bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--surface3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bar-row .bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 4px;
+    transition: width 1s ease;
+  }
+
+  /* === FOOTER === */
+  .play-footer {
+    border-top: 1px solid var(--outline-dim);
+    padding: 20px 32px;
+    margin-left: 240px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .play-footer .links {
+    display: flex;
+    gap: 20px;
+  }
+
+  .play-footer .links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .play-footer .links a:hover { color: var(--text); }
+
+  /* === SCROLL ANIMATIONS === */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* === MOBILE === */
+  @media (max-width: 900px) {
+    .play-sidebar { display: none; }
+    .play-main { margin-left: 0; }
+    .play-footer { margin-left: 0; }
+    .dev-header { flex-direction: column; gap: 16px; }
+    .dev-icon { width: 72px; height: 72px; }
+    .dev-stats { gap: 20px; }
+    .metrics-bar { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (max-width: 600px) {
+    .play-topbar { padding: 0 12px; }
+    .play-main { padding: 16px; }
+    .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+    .dev-name { font-size: 22px; }
+    .dev-actions { flex-direction: column; }
+    .rating-breakdown { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="play-topbar">
+  <a class="play-logo" href="#">
+    <svg viewBox="0 0 24 24"><path d="M3.61 1.814L13.793 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734c0-.393.232-.738.61-.92zm.86-.41L15.673 6.86l-2.97 2.97L5.47 2.403l-.05-.05.05.05zM17.24 7.97l3.018 1.684a1 1 0 0 1 0 1.742L17.24 13.08l-3.297-3.297L17.24 7.97zM5.47 19.647l7.233-7.233 2.97 2.97L4.47 20.84l1-.05-.05.05.05-.05z" fill="url(#play-grad)"/><defs><linearGradient id="play-grad" x1="3" y1="1" x2="21" y2="23"><stop stop-color="#4285F4"/><stop offset=".33" stop-color="#34A853"/><stop offset=".66" stop-color="#FBBC04"/><stop offset="1" stop-color="#EA4335"/></linearGradient></defs></svg>
+    <span>Google Play<span class="dim"> — Developer</span></span>
+  </a>
+  <div class="play-search">
+    <span class="material-icons-round search-icon">search</span>
+    <input type="text" placeholder="Search developer portfolio" value="Alok Kumar Singh" readonly>
+  </div>
+  <div class="play-avatar">A</div>
+</div>
+
+<!-- Layout -->
+<div class="play-layout">
+
+  <!-- Sidebar -->
+  <div class="play-sidebar">
+    <a class="sidebar-item active" href="#overview">
+      <span class="material-icons-round">person</span> Overview
+    </a>
+    <a class="sidebar-item" href="#apps">
+      <span class="material-icons-round">apps</span> Published Apps
+    </a>
+    <a class="sidebar-item" href="#skills">
+      <span class="material-icons-round">category</span> Skills
+    </a>
+    <a class="sidebar-item" href="#experience">
+      <span class="material-icons-round">star_rate</span> Experience
+    </a>
+    <div class="sidebar-divider"></div>
+    <a class="sidebar-item" href="#contact">
+      <span class="material-icons-round">mail</span> Contact
+    </a>
+    <a class="sidebar-item" href="#about">
+      <span class="material-icons-round">info</span> About
+    </a>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-label">Certifications</div>
+    <a class="sidebar-item" href="#">
+      <span class="material-icons-round" style="color:var(--star);">verified</span> Google Certified
+    </a>
+    <a class="sidebar-item" href="#">
+      <span class="material-icons-round" style="color:var(--green);">code</span> HackerRank
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="play-main">
+
+    <!-- Developer Header -->
+    <div class="dev-header" id="overview">
+      <div class="dev-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V7H6v11zM3.5 7C2.67 7 2 7.67 2 8.5v7c0 .83.67 1.5 1.5 1.5S5 16.33 5 15.5v-7C5 7.67 4.33 7 3.5 7zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zM15.53 2.16l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0012 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31A5.81 5.81 0 006 6h12c0-1.52-.58-2.89-1.53-3.91h.06zM10 4H9V3h1v1zm5 0h-1V3h1v1z" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="dev-info">
+        <div class="dev-name">
+          Alok Kumar Singh
+          <span class="material-icons-round verified">verified</span>
+        </div>
+        <div class="dev-subtitle">Senior Android Developer</div>
+        <div class="dev-desc">
+          6+ years building high-performance fintech applications serving 1M+ users.
+          Expert in Kotlin, Jetpack Compose, and KMM with a focus on clean architecture,
+          TDD, and CI/CD automation.
+        </div>
+        <div class="dev-badges">
+          <span class="dev-badge"><span class="material-icons-round">verified</span> Google Certified</span>
+          <span class="dev-badge"><span class="material-icons-round">code</span> HackerRank</span>
+          <span class="dev-badge"><span class="material-icons-round">location_on</span> Bengaluru</span>
+        </div>
+        <div class="dev-stats">
+          <div class="dev-stat"><span class="val">6+</span><span class="lbl">Years</span></div>
+          <div class="dev-stat"><span class="val">1M+</span><span class="lbl">Users</span></div>
+          <div class="dev-stat"><span class="val">4</span><span class="lbl">Apps</span></div>
+          <div class="dev-stat"><span class="val">4.9</span><span class="lbl">Rating</span></div>
+        </div>
+        <div class="dev-actions" style="margin-top:16px;">
+          <a class="play-btn filled" href="#contact">
+            <span class="material-icons-round">mail</span> Contact
+          </a>
+          <a class="play-btn outlined" href="https://www.linkedin.com/in/aloks19" target="_blank">
+            <span class="material-icons-round">open_in_new</span> LinkedIn
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="section-row">
+      <div class="section-title">Performance Metrics</div>
+    </div>
+    <div class="metrics-bar reveal">
+      <div class="metric-item">
+        <span class="m-val">99.33%</span>
+        <span class="m-label">Crash-Free</span>
+        <span class="m-delta">▲ from 95%</span>
+      </div>
+      <div class="metric-item">
+        <span class="m-val">1M+</span>
+        <span class="m-label">Users</span>
+        <span class="m-delta">active</span>
+      </div>
+      <div class="metric-item">
+        <span class="m-val">-70%</span>
+        <span class="m-label">Deploy</span>
+        <span class="m-delta">automated</span>
+      </div>
+      <div class="metric-item">
+        <span class="m-val">99.99%</span>
+        <span class="m-label">Notif Rate</span>
+        <span class="m-delta">▲ from 90%</span>
+      </div>
+      <div class="metric-item">
+        <span class="m-val">3-5x</span>
+        <span class="m-label">Productivity</span>
+        <span class="m-delta">AI-assisted</span>
+      </div>
+      <div class="metric-item">
+        <span class="m-val">15+</span>
+        <span class="m-label">PRs/Week</span>
+        <span class="m-delta">reviewed</span>
+      </div>
+    </div>
+
+    <!-- Rating Breakdown -->
+    <div class="section-row" id="apps">
+      <div class="section-title">Developer Rating</div>
+    </div>
+    <div class="rating-breakdown reveal">
+      <div class="rating-big">
+        <div class="number">4.9</div>
+        <div class="stars">
+          <span class="material-icons-round">star</span>
+          <span class="material-icons-round">star</span>
+          <span class="material-icons-round">star</span>
+          <span class="material-icons-round">star</span>
+          <span class="material-icons-round">star_half</span>
+        </div>
+        <div class="count">Based on experience</div>
+      </div>
+      <div class="rating-bars">
+        <div class="bar-row"><span class="bar-label">5</span><div class="bar-track"><div class="bar-fill" style="width:85%"></div></div></div>
+        <div class="bar-row"><span class="bar-label">4</span><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div></div>
+        <div class="bar-row"><span class="bar-label">3</span><div class="bar-track"><div class="bar-fill" style="width:3%"></div></div></div>
+        <div class="bar-row"><span class="bar-label">2</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div></div>
+        <div class="bar-row"><span class="bar-label">1</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Published Apps -->
+    <div class="section-row">
+      <div class="section-title">Published Apps</div>
+      <a class="section-action" href="#">See all →</a>
+    </div>
+    <div class="app-row reveal">
+      <div class="app-card">
+        <div class="app-card-img">
+          <div class="bg" style="background:linear-gradient(135deg,#1a3a12,#2e5a1e);">📈</div>
+        </div>
+        <div class="app-meta">
+          <div class="app-mini-icon" style="background:linear-gradient(135deg,#2e7d32,#4caf50);">T</div>
+          <div class="app-text">
+            <div class="name">Trading App</div>
+            <div class="dev">Alok Kumar Singh</div>
+            <div class="rating">4.8 <span class="material-icons-round star">star</span> · Finance</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-img">
+          <div class="bg" style="background:linear-gradient(135deg,#1a237e,#283593);">🔔</div>
+        </div>
+        <div class="app-meta">
+          <div class="app-mini-icon" style="background:linear-gradient(135deg,#1565c0,#42a5f5);">A</div>
+          <div class="app-text">
+            <div class="name">Analysis App</div>
+            <div class="dev">Alok Kumar Singh</div>
+            <div class="rating">4.7 <span class="material-icons-round star">star</span> · Finance</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-img">
+          <div class="bg" style="background:linear-gradient(135deg,#bf360c,#e65100);">📱</div>
+        </div>
+        <div class="app-meta">
+          <div class="app-mini-icon" style="background:linear-gradient(135deg,#e65100,#ff9800);">C</div>
+          <div class="app-text">
+            <div class="name">Cashify</div>
+            <div class="dev">Cashify</div>
+            <div class="rating">4.5 <span class="material-icons-round star">star</span> · Shopping</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div class="app-card-img">
+          <div class="bg" style="background:linear-gradient(135deg,#4a148c,#6a1b9a);">🏏</div>
+        </div>
+        <div class="app-meta">
+          <div class="app-mini-icon" style="background:linear-gradient(135deg,#6a1b9a,#ab47bc);">C</div>
+          <div class="app-text">
+            <div class="name">CricBuzz Clone</div>
+            <div class="dev">Alok Kumar Singh</div>
+            <div class="rating">4.3 <span class="material-icons-round star">star</span> · Sports</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="section-row" id="skills">
+      <div class="section-title">Skills & Categories</div>
+    </div>
+    <div class="reveal">
+      <div class="skill-section">
+        <div class="skill-section-label">Languages</div>
+        <div class="category-grid">
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#6a1b9a,#ab47bc);">Kt</div><span class="chip-label">Kotlin</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#e65100,#ff9800);">Jv</div><span class="chip-label">Java</span></div>
+        </div>
+      </div>
+      <div class="skill-section">
+        <div class="skill-section-label">Android</div>
+        <div class="category-grid">
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#2e7d32,#4caf50);">A</div><span class="chip-label">Android SDK</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#1565c0,#42a5f5);">JC</div><span class="chip-label">Jetpack Compose</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#283593,#5c6bc0);">K</div><span class="chip-label">KMM</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#00695c,#26a69a);">M</div><span class="chip-label">Material Design</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#00838f,#26c6da);">Co</div><span class="chip-label">Coroutines</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#1565c0,#42a5f5);">Fl</div><span class="chip-label">Kotlin Flow</span></div>
+        </div>
+      </div>
+      <div class="skill-section">
+        <div class="skill-section-label">Architecture & Testing</div>
+        <div class="category-grid">
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#2e7d32,#4caf50);">MV</div><span class="chip-label">MVVM</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#00695c,#26a69a);">CA</div><span class="chip-label">Clean Architecture</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#c62828,#ef5350);">Hi</div><span class="chip-label">Hilt</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#2e7d32,#4caf50);">JU</div><span class="chip-label">JUnit</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#00695c,#26a69a);">Es</div><span class="chip-label">Espresso</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#00838f,#26c6da);">TD</div><span class="chip-label">TDD</span></div>
+        </div>
+      </div>
+      <div class="skill-section">
+        <div class="skill-section-label">Tools & AI</div>
+        <div class="category-grid">
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#ff6f00,#ffc107);">Fb</div><span class="chip-label">Firebase</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#2e7d32,#4caf50);">Gr</div><span class="chip-label">Gradle</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#c62828,#ef5350);">Gi</div><span class="chip-label">Git</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#6a1b9a,#ab47bc);">Cl</div><span class="chip-label">Claude Code</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#1565c0,#42a5f5);">CP</div><span class="chip-label">Copilot</span></div>
+          <div class="cat-chip"><div class="chip-icon" style="background:linear-gradient(135deg,#283593,#5c6bc0);">Cx</div><span class="chip-label">Codex</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experience as Reviews -->
+    <div class="section-row" id="experience">
+      <div class="section-title">Experience Reviews</div>
+      <a class="section-action" href="#">Most relevant →</a>
+    </div>
+    <div class="review-list">
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">P</div>
+          <div class="review-info">
+            <div class="company">Punch</div>
+            <div class="role">Senior Android Developer</div>
+          </div>
+          <div class="review-period">Apr 2023 — Present</div>
+        </div>
+        <div class="review-stars">
+          <span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span>
+        </div>
+        <div class="review-body">
+          <ul>
+            <li>Built single-screen trading app + real-time charting for <span class="hl">1M+</span> users</li>
+            <li>Led end-to-end: architecture → Compose → Play Store release</li>
+            <li>Improved crash-free rate <span class="hl">95% → 99.33%</span></li>
+            <li>Migrated legacy app to <span class="hl">KMM</span> — shared logic Android & iOS</li>
+            <li>Achieved <span class="hl">3-5x</span> productivity with AI workflows</li>
+            <li>Mentored 4-5 devs, reviewed <span class="hl">10-15</span> PRs/week</li>
+          </ul>
+        </div>
+        <div class="review-helpful">
+          <span><span class="material-icons-round">thumb_up</span> Helpful</span>
+          <span><span class="material-icons-round">share</span> Share</span>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">P</div>
+          <div class="review-info">
+            <div class="company">Punch</div>
+            <div class="role">Android Developer</div>
+          </div>
+          <div class="review-period">Jun 2020 — Mar 2023</div>
+        </div>
+        <div class="review-stars">
+          <span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span>
+        </div>
+        <div class="review-body">
+          <ul>
+            <li>Notification deliverability <span class="hl">90% → 99.99%</span></li>
+            <li>Shipped referral program for user growth & retention</li>
+            <li>Automated CI/CD with Jenkins — <span class="hl">70% less</span> deploy effort</li>
+          </ul>
+        </div>
+        <div class="review-helpful">
+          <span><span class="material-icons-round">thumb_up</span> Helpful</span>
+          <span><span class="material-icons-round">share</span> Share</span>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">C</div>
+          <div class="review-info">
+            <div class="company">Cashify</div>
+            <div class="role">Android Developer</div>
+          </div>
+          <div class="review-period">Feb 2020 — May 2020</div>
+        </div>
+        <div class="review-stars">
+          <span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star_half</span>
+        </div>
+        <div class="review-body">
+          <ul>
+            <li>Built Profile module — personal info, addresses, photos</li>
+            <li>Device diagnostics: Bluetooth, Wi-Fi, SIM detection</li>
+            <li>Improved stability via systematic debugging</li>
+          </ul>
+        </div>
+        <div class="review-helpful">
+          <span><span class="material-icons-round">thumb_up</span> Helpful</span>
+          <span><span class="material-icons-round">share</span> Share</span>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">M</div>
+          <div class="review-info">
+            <div class="company">MountBlue Technologies</div>
+            <div class="role">Android Developer Trainee</div>
+          </div>
+          <div class="review-period">Nov 2019 — Jan 2020</div>
+        </div>
+        <div class="review-stars">
+          <span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star_half</span>
+        </div>
+        <div class="review-body">
+          <ul>
+            <li>Intensive Android bootcamp — Java, MVVM, Retrofit, Dagger</li>
+            <li>Built CricBuzz clone & Movies DB application</li>
+          </ul>
+        </div>
+        <div class="review-helpful">
+          <span><span class="material-icons-round">thumb_up</span> Helpful</span>
+          <span><span class="material-icons-round">share</span> Share</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact — Data Safety style -->
+    <div class="section-row" id="contact">
+      <div class="section-title">Contact Information</div>
+    </div>
+    <div class="safety-card reveal">
+      <div class="safety-row">
+        <div class="s-icon"><span class="material-icons-round">mail</span></div>
+        <div>
+          <div class="s-label">Email</div>
+          <div class="s-value"><a href="mailto:aloksingh191196@gmail.com">aloksingh191196@gmail.com</a></div>
+        </div>
+      </div>
+      <div class="safety-row">
+        <div class="s-icon"><span class="material-icons-round">phone</span></div>
+        <div>
+          <div class="s-label">Phone</div>
+          <div class="s-value">+91 7007405580</div>
+        </div>
+      </div>
+      <div class="safety-row">
+        <div class="s-icon"><span class="material-icons-round">location_on</span></div>
+        <div>
+          <div class="s-label">Location</div>
+          <div class="s-value">Bengaluru, India</div>
+        </div>
+      </div>
+      <div class="safety-row">
+        <div class="s-icon"><span class="material-icons-round">open_in_new</span></div>
+        <div>
+          <div class="s-label">LinkedIn</div>
+          <div class="s-value"><a href="https://www.linkedin.com/in/aloks19" target="_blank">linkedin.com/in/aloks19</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- About — Education -->
+    <div class="section-row" id="about">
+      <div class="section-title">About this developer</div>
+    </div>
+    <div class="about-card reveal">
+      <div class="about-row">
+        <span class="material-icons-round">school</span>
+        <div>
+          <div class="a-label">Education</div>
+          <div class="a-value">B.Tech — Pranveer Singh Institute of Technology (2014–2018)</div>
+        </div>
+      </div>
+      <div class="about-row">
+        <span class="material-icons-round">verified</span>
+        <div>
+          <div class="a-label">Certifications</div>
+          <div class="a-value">Google Associate Android Developer · HackerRank Problem Solving</div>
+        </div>
+      </div>
+      <div class="about-row">
+        <span class="material-icons-round">interests</span>
+        <div>
+          <div class="a-label">Interests</div>
+          <div class="a-value">Strategy Games · Tech Exploration · Culinary · Sudoku</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="play-footer">
+  <div>Google Play Developer Portfolio · Alok Kumar Singh · 2026</div>
+  <div class="links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">About</a>
+  </div>
+</div>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Sidebar active state on scroll
+const sections = document.querySelectorAll('[id]');
+const sidebarLinks = document.querySelectorAll('.sidebar-item');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 100;
+    if (window.scrollY >= top) current = section.id;
+  });
+
+  sidebarLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+});
+
+// Animate rating bars on scroll
+const ratingObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const bars = entry.target.querySelectorAll('.bar-fill');
+      bars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => { bar.style.width = width; }, 100);
+      });
+      ratingObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.3 });
+
+const ratingSection = document.querySelector('.rating-breakdown');
+if (ratingSection) ratingObserver.observe(ratingSection);
+
+// Chip hover ripple
+document.querySelectorAll('.cat-chip').forEach(chip => {
+  chip.addEventListener('click', function(e) {
+    this.style.transform = 'scale(0.95)';
+    setTimeout(() => { this.style.transform = ''; }, 150);
+  });
+});
+</script>
+</body>
+</html>

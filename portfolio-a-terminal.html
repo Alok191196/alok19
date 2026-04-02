@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alok Kumar Singh — Terminal Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Fira+Code:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #0d1117;
+    --border: #1b2230;
+    --text: #b3b1ad;
+    --text-bright: #e6e1cf;
+    --green: #7fd962;
+    --blue: #39bae6;
+    --orange: #ff8f40;
+    --yellow: #e6b450;
+    --purple: #d2a6ff;
+    --red: #ff3333;
+    --cyan: #95e6cb;
+    --pink: #f07178;
+    --prompt: #7fd962;
+    --comment: #626a73;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--bg);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* CRT glow effect */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .terminal {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 24px;
+  }
+
+  /* Title bar */
+  .title-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px 10px 0 0;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .title-bar .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .title-bar .dot.red { background: #ff5f56; }
+  .title-bar .dot.yellow { background: #ffbd2e; }
+  .title-bar .dot.green { background: #27c93f; }
+  .title-bar .title {
+    flex: 1;
+    text-align: center;
+    color: var(--comment);
+    font-size: 12px;
+  }
+
+  .title-bar nav {
+    display: flex;
+    gap: 16px;
+  }
+
+  .title-bar nav a {
+    color: var(--comment);
+    text-decoration: none;
+    font-size: 12px;
+    transition: color 0.2s;
+  }
+
+  .title-bar nav a:hover { color: var(--green); }
+
+  /* Terminal body */
+  .term-body {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+
+  /* Command line */
+  .cmd {
+    margin-bottom: 4px;
+    opacity: 0;
+    animation: typeIn 0.3s ease forwards;
+  }
+
+  .cmd .path { color: var(--blue); }
+  .cmd .prompt-char { color: var(--prompt); margin: 0 6px; }
+  .cmd .command { color: var(--text-bright); }
+  .cmd .flag { color: var(--orange); }
+  .cmd .arg { color: var(--cyan); }
+
+  /* Output blocks */
+  .output {
+    margin-bottom: 20px;
+    padding-left: 4px;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  .output .key { color: var(--purple); }
+  .output .val { color: var(--cyan); }
+  .output .str { color: var(--green); }
+  .output .num { color: var(--orange); }
+  .output .bracket { color: var(--yellow); }
+  .output .comment { color: var(--comment); font-style: italic; }
+  .output .success { color: var(--green); }
+  .output .hash { color: var(--yellow); }
+  .output .msg { color: var(--text-bright); }
+  .output .date { color: var(--comment); }
+
+  /* Section dividers */
+  .section-break {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 28px 0;
+  }
+
+  /* Blinking cursor */
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
+    background: var(--green);
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @keyframes typeIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Staggered animations */
+  .term-body > *:nth-child(1) { animation-delay: 0.1s; }
+  .term-body > *:nth-child(2) { animation-delay: 0.2s; }
+  .term-body > *:nth-child(3) { animation-delay: 0.4s; }
+  .term-body > *:nth-child(4) { animation-delay: 0.6s; }
+  .term-body > *:nth-child(5) { animation-delay: 0.8s; }
+  .term-body > *:nth-child(6) { animation-delay: 1.0s; }
+  .term-body > *:nth-child(7) { animation-delay: 1.2s; }
+  .term-body > *:nth-child(8) { animation-delay: 1.4s; }
+  .term-body > *:nth-child(9) { animation-delay: 1.6s; }
+  .term-body > *:nth-child(10) { animation-delay: 1.8s; }
+  .term-body > *:nth-child(11) { animation-delay: 2.0s; }
+  .term-body > *:nth-child(12) { animation-delay: 2.2s; }
+  .term-body > *:nth-child(13) { animation-delay: 2.4s; }
+  .term-body > *:nth-child(14) { animation-delay: 2.6s; }
+  .term-body > *:nth-child(15) { animation-delay: 2.8s; }
+
+  /* Metrics grid */
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+    margin: 8px 0;
+  }
+
+  .metric {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .metric .bar {
+    height: 4px;
+    border-radius: 2px;
+    flex: 1;
+    max-width: 120px;
+  }
+
+  /* Experience timeline */
+  .exp-entry {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 16px;
+    border-left: 2px solid var(--border);
+  }
+
+  .exp-entry::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+  }
+
+  .exp-entry .role { color: var(--text-bright); font-weight: 500; }
+  .exp-entry .company { color: var(--blue); }
+  .exp-entry .period { color: var(--comment); font-size: 12px; }
+  .exp-entry ul { padding-left: 16px; margin-top: 4px; }
+  .exp-entry li { color: var(--text); font-size: 13px; margin-bottom: 2px; }
+  .exp-entry li::marker { color: var(--comment); }
+
+  /* Project cards */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 8px 0;
+  }
+
+  .project-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+
+  .project-card:hover {
+    border-color: var(--green);
+    transform: translateY(-2px);
+  }
+
+  .project-card .name { color: var(--text-bright); font-weight: 500; margin-bottom: 4px; }
+  .project-card .desc { color: var(--comment); font-size: 12px; margin-bottom: 8px; }
+  .project-card .tech { font-size: 11px; }
+  .project-card .tech span {
+    display: inline-block;
+    background: rgba(127,217,98,0.1);
+    color: var(--green);
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin: 2px 2px 0 0;
+  }
+
+  .project-card .link {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 12px;
+    transition: color 0.2s;
+  }
+
+  .project-card .link:hover { color: var(--green); }
+
+  /* Skills display */
+  .skill-group { margin-bottom: 12px; }
+  .skill-group .label { color: var(--purple); font-size: 12px; margin-bottom: 4px; }
+  .skill-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .skill-pills span {
+    background: rgba(57,186,230,0.08);
+    border: 1px solid rgba(57,186,230,0.2);
+    color: var(--blue);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .skill-pills span:hover {
+    background: rgba(57,186,230,0.15);
+    border-color: var(--blue);
+  }
+
+  /* Contact section */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 8px 0;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .contact-item .icon { color: var(--green); }
+
+  .contact-item a {
+    color: var(--blue);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .contact-item a:hover { color: var(--green); }
+
+  /* Certification badges */
+  .cert {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(230,180,80,0.08);
+    border: 1px solid rgba(230,180,80,0.2);
+    color: var(--yellow);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin: 4px 4px 0 0;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--comment);
+    font-size: 11px;
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    .terminal { padding: 8px; }
+    .term-body { padding: 16px; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .title-bar nav { display: none; }
+    body { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="terminal">
+
+  <!-- Title Bar -->
+  <div class="title-bar">
+    <div class="dot red"></div>
+    <div class="dot yellow"></div>
+    <div class="dot green"></div>
+    <div class="title">alok@portfolio:~</div>
+    <nav>
+      <a href="#about">about</a>
+      <a href="#skills">skills</a>
+      <a href="#experience">exp</a>
+      <a href="#projects">projects</a>
+      <a href="#contact">contact</a>
+    </nav>
+  </div>
+
+  <!-- Terminal Body -->
+  <div class="term-body" id="about">
+
+    <!-- whoami -->
+    <div class="cmd">
+      <span class="path">~/portfolio</span>
+      <span class="prompt-char">❯</span>
+      <span class="command">whoami</span>
+    </div>
+    <div class="output">
+      <div style="font-size:22px;color:var(--text-bright);font-weight:700;letter-spacing:-0.5px;">Alok Kumar Singh</div>
+      <div style="color:var(--green);font-size:15px;margin-bottom:6px;">Senior Android Developer</div>
+      <div style="color:var(--text);font-size:13px;max-width:640px;">
+        6+ years building high-performance fintech applications serving 1M+ users.
+        Expert in Kotlin, Jetpack Compose, and KMM. I ship reliable, scalable Android apps
+        and mentor teams to do the same.
+      </div>
+    </div>
+
+    <hr class="section-break">
+
+    <!-- Certifications -->
+    <div class="cmd">
+      <span class="path">~/portfolio</span>
+      <span class="prompt-char">❯</span>
+      <span class="command">cat</span>
+      <span class="arg">certifications.txt</span>
+    </div>
+    <div class="output">
+      <span class="cert">🏅 Google Associate Android Developer</span>
+      <span class="cert">🏅 HackerRank Problem Solving</span>
+    </div>
+
+    <hr class="section-break">
+
+    <!-- Metrics -->
+    <div class="cmd">
+      <span class="path">~/portfolio</span>
+      <span class="prompt-char">❯</span>
+      <span class="command">./run-metrics.sh</span>
+    </div>
+    <div class="output">
+      <div class="metrics">
+        <div class="metric">
+          <span class="success">✓</span>
+          <span>crash_free_rate:</span>
+          <span class="num">95%</span>
+          <span class="comment">→</span>
+          <span class="success" style="font-weight:700;">99.33%</span>
+        </div>
+        <div class="metric">
+          <span class="success">✓</span>
+          <span>users_served:</span>
+          <span class="success" style="font-weight:700;">1,000,000+</span>
+        </div>
+        <div class="metric">
+          <span class="success">✓</span>
+          <span>deploy_effort:</span>
+          <span class="success" style="font-weight:700;">-70%</span>
+        </div>
+        <div class="metric">
+          <span class="success">✓</span>
+          <span>notif_delivery:</span>
+          <span class="num">90%</span>
+          <span class="comment">→</span>
+          <span class="success" style="font-weight:700;">99.99%</span>
+        </div>
+        <div class="metric">
+          <span class="success">✓</span>
+          <span>productivity:</span>
+          <span class="success" style="font-weight:700;">3-5x</span>
+          <span class="comment">(AI-assisted)</span>
+        </div>
+        <div class="metric">
+          <span class="success">✓</span>
+          <span>prs_reviewed:</span>
+          <span class="success" style="font-weight:700;">10-15/week</span>
+        </div>
+      </div>
+      <div style="margin-top:8px;color:var(--green);font-size:12px;">
+        ████████████████████████████████████ 100% — All checks passed
+      </div>
+    </div>
+
+    <hr class="section-break" id="skills">
+
+    <!-- Skills -->
+    <div class="cmd">
+      <span class="path">~/portfolio</span>
+      <span class="prompt-char">❯</span>
+      <span class="command">cat</span>
+      <span class="arg">dependencies.gradle.kts</span>
+    </div>
+    <div class="output">
+      <div class="skill-group">
+        <div class="label">// languages</div>
+        <div class="skill-pills">
+          <span>Kotlin</span><span>Java</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="label">// android</div>
+        <div class="skill-pills">
+          <span>Android SDK</span><span>Jetpack Compose</span><span>KMM</span>
+          <span>Material Design</span><span>Coroutines</span><span>Kotlin Flow</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="label">// architecture</div>
+        <div class="skill-pills">
+          <span>MVVM</span><span>Clean Architecture</span><span>Design Patterns</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="label">// libraries</div>
+        <div class="skill-pills">
+          <span>Hilt</span><span>Ktor</span><span>Firebase</span>
+          <span>Crashlytics</span><span>FCM</span><span>Gradle</span><span>Git</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="label">// testing</div>
+        <div class="skill-pills">
+          <span>JUnit</span><span>Espresso</span><span>Mockito</span><span>TDD</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="label">// ai_productivity</div>
+        <div class="skill-pills">
+          <span>Claude Code</span><span>GitHub Copilot</span><span>Codex</span>
+        </div>
+      </div>
+    </div>
+
+    <hr class="section-break" id="experience">
+
+    <!-- Experience -->
+    <div class="cmd">
+      <span class="path">~/portfolio</span>
+      <span class="prompt-char">❯</span>
+      <span class="command">git log</span>
+      <span class="flag">--graph --all</span>
+      <span class="arg">experience/</span>
+    </div>
+    <div class="output">
+      <div class="exp-entry">
+        <div class="role">Senior Android Developer</div>
+        <div><span class="company">Punch</span> <span class="period">Apr 2023 — Present</span></div>
+        <ul>
+          <li>Built single-screen trading app + real-time charting for <span class="num">1M+</span> users</li>
+          <li>Led end-to-end delivery: architecture → Compose → Play Store release</li>
+          <li>Improved crash-free rate <span class="num">95%</span> → <span class="success">99.33%</span></li>
+          <li>Migrated legacy app to <span class="val">KMM</span> — shared logic across Android & iOS</li>
+          <li>Achieved <span class="num">3-5x</span> productivity with Claude Code & Copilot</li>
+          <li>Mentored <span class="num">4-5</span> junior devs, reviewed <span class="num">10-15</span> PRs/week</li>
+        </ul>
+      </div>
+
+      <div class="exp-entry">
+        <div class="role">Android Developer</div>
+        <div><span class="company">Punch</span> <span class="period">Jun 2020 — Mar 2023</span></div>
+        <ul>
+          <li>Pushed notification deliverability <span class="num">90%</span> → <span class="success">99.99%</span></li>
+          <li>Shipped referral program feature for user acquisition & retention</li>
+          <li>Automated CI/CD with Jenkins — <span class="success">70% less</span> deployment effort</li>
+        </ul>
+      </div>
+
+      <div class="exp-entry">
+        <div class="role">Android Developer</div>
+        <div><span class="company">Cashify</span> <span class="period">Feb 2020 — May 2020</span></div>
+        <ul>
+          <li>Built Profile module — personal info, addresses, profile photos</li>
+          <li>Device diagnostics: Bluetooth, Wi-Fi, SIM status detection</li>
+          <li>Improved stability via systematic debugging</li>
+        </ul>
+      </div>
+
+      <div class="exp-entry">
+        <div class="role">Android Developer Trainee</div>
+        <div><span class="company">MountBlue Technologies</span> <span class="period">Nov 2019 — Jan 2020</span></div>
+        <ul>
+          <li>Intensive Android bootcamp — Java, MVVM, Retrofit, Dagger, Room</li>
+          <li>Built CricBuzz clone & Movies DB app</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="section-break" id="projects">
+
+    <!-- Projects -->
+    <div class="cmd">
+      <span class="path">~/portfolio</span>
+      <span class="prompt-char">❯</span>
+      <span class="command">ls</span>
+      <span class="flag">-la</span>
+      <span class="arg">projects/</span>
+    </div>
+    <div class="output">
+      <div class="projects-grid">
+        <div class="project-card">
+          <div class="name">Trading App</div>
+          <div class="desc">Single-screen trading with real-time financial charts. 1M+ users on Play Store.</div>
+          <div class="tech">
+            <span>Compose</span><span>Hilt</span><span>MVVM</span><span>Kotlin</span>
+          </div>
+          <a class="link" href="#">▶ Play Store →</a>
+        </div>
+        <div class="project-card">
+          <div class="name">Analysis App</div>
+          <div class="desc">Financial analysis platform with 99.99% notification reliability.</div>
+          <div class="tech">
+            <span>KMM</span><span>Firebase</span><span>FCM</span>
+          </div>
+          <a class="link" href="#">▶ Play Store →</a>
+        </div>
+        <div class="project-card">
+          <div class="name">Cashify</div>
+          <div class="desc">User profile & device diagnostics module for recommerce platform.</div>
+          <div class="tech">
+            <span>MVVM</span><span>Retrofit</span><span>Room</span>
+          </div>
+          <a class="link" href="#">▶ Play Store →</a>
+        </div>
+        <div class="project-card">
+          <div class="name">CricBuzz Clone</div>
+          <div class="desc">Live cricket scores app — bootcamp capstone project.</div>
+          <div class="tech">
+            <span>Java</span><span>Dagger</span><span>Paging</span>
+          </div>
+          <a class="link" href="#">▶ GitHub →</a>
+        </div>
+      </div>
+    </div>
+
+    <hr class="section-break">
+
+    <!-- Education -->
+    <div class="cmd">
+      <span class="path">~/portfolio</span>
+      <span class="prompt-char">❯</span>
+      <span class="command">cat</span>
+      <span class="arg">education.md</span>
+    </div>
+    <div class="output">
+      <div style="color:var(--text-bright);">B.Tech</div>
+      <div><span class="company">Pranveer Singh Institute of Technology</span> <span class="date">Aug 2014 — Jun 2018</span></div>
+    </div>
+
+    <hr class="section-break" id="contact">
+
+    <!-- Contact -->
+    <div class="cmd">
+      <span class="path">~/portfolio</span>
+      <span class="prompt-char">❯</span>
+      <span class="command">cat</span>
+      <span class="arg">.env</span>
+    </div>
+    <div class="output">
+      <div class="contact-grid">
+        <div class="contact-item">
+          <span class="icon">📧</span>
+          <a href="mailto:aloksingh191196@gmail.com">aloksingh191196@gmail.com</a>
+        </div>
+        <div class="contact-item">
+          <span class="icon">📱</span>
+          <span>+91 7007405580</span>
+        </div>
+        <div class="contact-item">
+          <span class="icon">📍</span>
+          <span>Bengaluru, India</span>
+        </div>
+        <div class="contact-item">
+          <span class="icon">🔗</span>
+          <a href="https://www.linkedin.com/in/aloks19" target="_blank">linkedin.com/in/aloks19</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cursor -->
+    <div class="cmd" style="margin-top:16px;">
+      <span class="path">~/portfolio</span>
+      <span class="prompt-char">❯</span>
+      <span class="cursor"></span>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span class="comment">// Built with raw HTML, CSS & caffeine. No frameworks were harmed.</span>
+  </div>
+</div>
+
+</body>
+</html>

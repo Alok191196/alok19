@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alok Kumar Singh — Android Developer</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700;800;900&family=Roboto+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1318;
+    --surface: #1c2027;
+    --surface2: #242830;
+    --surface3: #2c3038;
+    --outline: #3a3f4a;
+    --outline-dim: #272b33;
+    --primary: #a8d98a;
+    --primary-dim: rgba(168,217,138,0.12);
+    --primary-dark: #1b3a12;
+    --on-primary: #0a1a05;
+    --secondary: #81d4fa;
+    --tertiary: #f48fb1;
+    --error: #f28b82;
+    --text: #c4cbd8;
+    --text-bright: #e8ecf2;
+    --text-dim: #7a8494;
+    --android-green: #3ddc84;
+    --android-dark: #073d1e;
+    --kotlin: #7f52ff;
+    --compose: #4285f4;
+    --yellow: #fdd835;
+    --orange: #ff9800;
+    --sans: 'Noto Sans', system-ui, sans-serif;
+    --mono: 'Roboto Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ========== BOOT ANIMATION ========== */
+  .boot-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: bootFade 0.5s ease 2.8s forwards;
+  }
+
+  .boot-screen .boot-logo {
+    width: 80px;
+    height: 80px;
+    animation: bootPulse 0.8s ease infinite alternate;
+  }
+
+  .boot-screen .boot-text {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: #3ddc84;
+    margin-top: 20px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    animation: bootTextFade 0.6s ease 1.5s both;
+  }
+
+  .boot-screen .boot-dots {
+    margin-top: 24px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .boot-screen .boot-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3ddc84;
+    animation: bootDot 1.2s ease infinite;
+  }
+
+  .boot-screen .boot-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .boot-screen .boot-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bootPulse {
+    from { transform: scale(0.9); opacity: 0.7; }
+    to { transform: scale(1.1); opacity: 1; }
+  }
+
+  @keyframes bootTextFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bootDot {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1.2); }
+  }
+
+  @keyframes bootFade {
+    to { opacity: 0; pointer-events: none; }
+  }
+
+  /* ========== MATERIAL YOU BLOBS ========== */
+  .blob-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.07;
+    animation: blobFloat 20s ease-in-out infinite alternate;
+  }
+
+  .blob.b1 {
+    width: 500px; height: 500px;
+    background: var(--android-green);
+    top: -10%; left: -5%;
+    animation-duration: 22s;
+  }
+
+  .blob.b2 {
+    width: 400px; height: 400px;
+    background: var(--kotlin);
+    top: 40%; right: -10%;
+    animation-delay: -5s;
+    animation-duration: 18s;
+  }
+
+  .blob.b3 {
+    width: 350px; height: 350px;
+    background: var(--compose);
+    bottom: -5%; left: 30%;
+    animation-delay: -10s;
+    animation-duration: 25s;
+  }
+
+  @keyframes blobFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -40px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.95); }
+    100% { transform: translate(10px, -10px) scale(1.05); }
+  }
+
+  /* ========== ANDROID STATUS BAR ========== */
+  .status-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    height: 28px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #fff;
+  }
+
+  .status-bar .left { display: flex; align-items: center; gap: 6px; }
+  .status-bar .right { display: flex; align-items: center; gap: 8px; }
+  .status-bar .time { font-weight: 500; }
+
+  .signal-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    height: 10px;
+  }
+
+  .signal-bars span {
+    width: 3px;
+    background: #fff;
+    border-radius: 1px;
+  }
+
+  .signal-bars span:nth-child(1) { height: 3px; }
+  .signal-bars span:nth-child(2) { height: 5px; }
+  .signal-bars span:nth-child(3) { height: 7px; }
+  .signal-bars span:nth-child(4) { height: 10px; }
+
+  .battery {
+    width: 20px;
+    height: 10px;
+    border: 1.5px solid #fff;
+    border-radius: 2px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 1px;
+  }
+
+  .battery::after {
+    content: '';
+    position: absolute;
+    right: -4px;
+    width: 2px;
+    height: 5px;
+    background: #fff;
+    border-radius: 0 1px 1px 0;
+  }
+
+  .battery .fill {
+    width: 80%;
+    height: 100%;
+    background: var(--android-green);
+    border-radius: 1px;
+  }
+
+  /* ========== APP BAR ========== */
+  .app-bar {
+    position: fixed;
+    top: 28px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: 56px;
+    background: rgba(15,19,24,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--outline-dim);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    transition: background 0.3s;
+  }
+
+  .app-bar .hamburger {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: var(--text);
+  }
+
+  .app-bar .hamburger:hover { background: var(--surface); }
+
+  .app-bar-title {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-bright);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .app-bar-title .live-dot {
+    width: 8px; height: 8px;
+    background: var(--android-green);
+    border-radius: 50%;
+    animation: livePulse 2s ease infinite;
+    box-shadow: 0 0 8px rgba(61,220,132,0.5);
+  }
+
+  @keyframes livePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(61,220,132,0.5); }
+    50% { transform: scale(1.3); box-shadow: 0 0 16px rgba(61,220,132,0.8); }
+  }
+
+  .app-bar .actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .app-bar .action-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+  }
+
+  .app-bar .action-btn:hover { background: var(--surface); }
+
+  /* ========== BOTTOM NAV (Android) ========== */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: 72px;
+    background: rgba(28,32,39,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--outline-dim);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 24px;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 500;
+    transition: color 0.2s;
+    position: relative;
+    padding: 4px 20px;
+    border-radius: 16px;
+  }
+
+  .nav-item .material-icons-round { font-size: 24px; transition: all 0.3s; }
+
+  .nav-item.active {
+    color: var(--primary);
+  }
+
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 56px;
+    height: 28px;
+    background: var(--primary-dim);
+    border-radius: 14px;
+    z-index: -1;
+    animation: navPill 0.3s ease;
+  }
+
+  @keyframes navPill {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  .nav-item:hover { color: var(--text-bright); }
+
+  /* Home indicator bar */
+  .home-indicator {
+    position: fixed;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    z-index: 101;
+  }
+
+  /* ========== MAIN CONTENT ========== */
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .content {
+    padding-top: 96px;
+    padding-bottom: 88px;
+  }
+
+  section { padding: 24px 0; }
+
+  /* ========== HERO — LOCK SCREEN STYLE ========== */
+  .hero-lockscreen {
+    text-align: center;
+    padding: 48px 0 32px;
+    position: relative;
+  }
+
+  .hero-lockscreen .avatar-ring {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-lockscreen .avatar-ring::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(var(--android-green), var(--compose), var(--kotlin), var(--android-green));
+    animation: ringRotate 6s linear infinite;
+  }
+
+  @keyframes ringRotate {
+    to { transform: rotate(360deg); }
+  }
+
+  .hero-lockscreen .avatar {
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1b3a12, #2e5a1e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  .hero-lockscreen .avatar svg { width: 60px; height: 60px; }
+
+  .hero-lockscreen h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+    animation: fadeUp 0.6s ease 3s both;
+  }
+
+  .hero-lockscreen .role-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary-dim);
+    border: 1px solid rgba(168,217,138,0.15);
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 100px;
+    margin: 12px 0;
+    animation: fadeUp 0.6s ease 3.2s both;
+  }
+
+  .hero-lockscreen .bio {
+    font-size: 15px;
+    color: var(--text);
+    max-width: 520px;
+    margin: 12px auto 0;
+    line-height: 1.7;
+    animation: fadeUp 0.6s ease 3.4s both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ========== QUICK SETTINGS TILES (Certs) ========== */
+  .qs-tiles {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+    animation: fadeUp 0.6s ease 3.6s both;
+  }
+
+  .qs-tile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--outline-dim);
+    border-radius: 20px;
+    padding: 10px 18px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .qs-tile:hover {
+    background: var(--primary-dim);
+    border-color: rgba(168,217,138,0.2);
+    transform: scale(1.03);
+  }
+
+  .qs-tile .material-icons-round { font-size: 18px; color: var(--android-green); }
+  .qs-tile span { font-size: 12px; font-weight: 500; color: var(--text-bright); }
+
+  /* ========== WIDGET CARDS ========== */
+  .widget {
+    background: var(--surface);
+    border: 1px solid var(--outline-dim);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .widget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .widget-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .widget-title .material-icons-round { font-size: 20px; color: var(--primary); }
+
+  .widget-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--android-green);
+    background: rgba(61,220,132,0.1);
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+
+  /* ========== METRICS WIDGET ========== */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .metric-tile {
+    background: var(--surface2);
+    border-radius: 16px;
+    padding: 16px 12px;
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric-tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, var(--primary-dim), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .metric-tile:hover { transform: scale(1.05); }
+  .metric-tile:hover::before { opacity: 1; }
+
+  .metric-tile .val {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-bright);
+    display: block;
+    position: relative;
+  }
+
+  .metric-tile .lbl {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    position: relative;
+  }
+
+  .metric-tile .delta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--android-green);
+    margin-top: 4px;
+    position: relative;
+  }
+
+  /* ========== SKILLS — ANDROID WIDGET GRID ========== */
+  .skills-widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 12px;
+  }
+
+  .skill-app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: default;
+    transition: transform 0.2s;
+  }
+
+  .skill-app:hover { transform: scale(1.15); }
+  .skill-app:active { transform: scale(0.9); }
+
+  .skill-app .icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Long press hint */
+  .skill-app .icon-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.15s;
+  }
+
+  .skill-app:hover .icon-wrap::after { background: rgba(255,255,255,0.08); }
+
+  .skill-app .app-name {
+    font-size: 10px;
+    color: var(--text);
+    text-align: center;
+    font-weight: 500;
+    max-width: 64px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .skill-divider {
+    grid-column: 1 / -1;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 4px 0 0;
+  }
+
+  /* ========== EXPERIENCE — NOTIFICATION CARDS ========== */
+  .notif {
+    background: var(--surface2);
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 14px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    border-left: 4px solid var(--android-green);
+  }
+
+  .notif:nth-child(2) { border-left-color: var(--kotlin); }
+  .notif:nth-child(3) { border-left-color: var(--compose); }
+  .notif:nth-child(4) { border-left-color: var(--orange); }
+
+  .notif:hover {
+    background: var(--surface3);
+    transform: translateX(4px);
+  }
+
+  /* Swipe hint line */
+  .notif::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 18px;
+    right: 18px;
+    height: 1px;
+    background: var(--outline-dim);
+  }
+
+  .notif:last-child::after { display: none; }
+
+  .notif .notif-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .notif:nth-child(1) .notif-icon { background: linear-gradient(135deg, #2e7d32, #4caf50); }
+  .notif:nth-child(2) .notif-icon { background: linear-gradient(135deg, #5c35cc, #7f52ff); }
+  .notif:nth-child(3) .notif-icon { background: linear-gradient(135deg, #1565c0, #42a5f5); }
+  .notif:nth-child(4) .notif-icon { background: linear-gradient(135deg, #e65100, #ff9800); }
+
+  .notif-body { flex: 1; }
+
+  .notif-body .n-role {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .notif-body .n-company {
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .notif-body .n-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    position: absolute;
+    top: 18px;
+    right: 18px;
+  }
+
+  .notif-body ul {
+    padding-left: 14px;
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .notif-body li::marker { color: var(--primary); }
+  .notif-body .hl { color: var(--android-green); font-family: var(--mono); font-weight: 600; font-size: 12px; }
+
+  /* Expand / collapse */
+  .notif-expand {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .notif-expand .material-icons-round { font-size: 16px; transition: transform 0.3s; }
+
+  /* ========== PROJECTS — APP CARDS (Material) ========== */
+  .app-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .app-card {
+    background: var(--surface);
+    border: 1px solid var(--outline-dim);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .app-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    border-color: rgba(168,217,138,0.2);
+  }
+
+  .app-card-banner {
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .app-card-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%);
+    background-size: 200% 200%;
+    animation: shimmer 3s ease infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .app-card:nth-child(1) .app-card-banner { background: linear-gradient(135deg, #1b3a12, #2e5a1e); }
+  .app-card:nth-child(2) .app-card-banner { background: linear-gradient(135deg, #1a237e, #283593); }
+  .app-card:nth-child(3) .app-card-banner { background: linear-gradient(135deg, #bf360c, #e65100); }
+  .app-card:nth-child(4) .app-card-banner { background: linear-gradient(135deg, #4a148c, #6a1b9a); }
+
+  .app-card-info {
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .app-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    margin-top: -28px;
+    position: relative;
+    z-index: 1;
+    border: 2px solid var(--surface);
+  }
+
+  .app-card:nth-child(1) .app-card-icon { background: linear-gradient(135deg, #2e7d32, #4caf50); }
+  .app-card:nth-child(2) .app-card-icon { background: linear-gradient(135deg, #1565c0, #42a5f5); }
+  .app-card:nth-child(3) .app-card-icon { background: linear-gradient(135deg, #e65100, #ff9800); }
+  .app-card:nth-child(4) .app-card-icon { background: linear-gradient(135deg, #6a1b9a, #ab47bc); }
+
+  .app-card-text { flex: 1; }
+  .app-card-text .name { font-size: 14px; font-weight: 700; color: var(--text-bright); }
+  .app-card-text .desc { font-size: 12px; color: var(--text-dim); margin: 2px 0 8px; line-height: 1.4; }
+
+  .app-card-text .stars {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .app-card-text .stars .material-icons-round { font-size: 13px; color: var(--yellow); }
+
+  .app-card-text .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .app-card-text .tags span {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: var(--primary-dim);
+    color: var(--primary);
+    font-weight: 500;
+  }
+
+  .install-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--on-primary);
+    background: var(--primary);
+    padding: 6px 20px;
+    border-radius: 100px;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(168,217,138,0.2);
+  }
+
+  .install-btn:hover {
+    box-shadow: 0 4px 16px rgba(168,217,138,0.35);
+    transform: scale(1.03);
+  }
+
+  /* ========== CONTACT WIDGET ========== */
+  .contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 4px;
+    border-radius: 14px;
+    transition: background 0.2s;
+  }
+
+  .contact-row:hover { background: var(--surface2); }
+
+  .contact-row .c-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .contact-row .c-icon .material-icons-round { font-size: 20px; color: var(--primary); }
+
+  .contact-row .c-label { font-size: 11px; color: var(--text-dim); }
+
+  .contact-row .c-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-bright);
+  }
+
+  .contact-row a { color: var(--primary); text-decoration: none; }
+  .contact-row a:hover { text-decoration: underline; }
+
+  /* ========== EDUCATION ========== */
+  .edu-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0;
+  }
+
+  .edu-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #1565c0, #42a5f5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .edu-row .degree { font-size: 15px; font-weight: 700; color: var(--text-bright); }
+  .edu-row .school { font-size: 13px; color: var(--primary); font-weight: 500; }
+  .edu-row .period { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+
+  /* ========== FAB ========== */
+  .fab {
+    position: fixed;
+    bottom: 88px;
+    right: 24px;
+    z-index: 99;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--primary);
+    color: var(--on-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(168,217,138,0.3);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+
+  .fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(168,217,138,0.45);
+    border-radius: 20px;
+  }
+
+  .fab .material-icons-round { font-size: 24px; }
+
+  /* ========== FOOTER ========== */
+  footer {
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  footer .heart { color: var(--android-green); }
+
+  /* ========== SCROLL REVEAL ========== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ========== MOBILE ========== */
+  @media (max-width: 600px) {
+    .hero-lockscreen h1 { font-size: 28px; }
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    .app-cards { grid-template-columns: 1fr; }
+    .qs-tiles { flex-direction: column; align-items: center; }
+    .skills-widget-grid { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Boot Animation -->
+<div class="boot-screen">
+  <div class="boot-logo">
+    <svg viewBox="0 0 24 24" width="80" height="80" fill="none">
+      <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V7H6v11zM3.5 7C2.67 7 2 7.67 2 8.5v7c0 .83.67 1.5 1.5 1.5S5 16.33 5 15.5v-7C5 7.67 4.33 7 3.5 7zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zM15.53 2.16l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0012 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31A5.81 5.81 0 006 6h12c0-1.52-.58-2.89-1.53-3.91h.06zM10 4H9V3h1v1zm5 0h-1V3h1v1z" fill="#3DDC84"/>
+    </svg>
+  </div>
+  <div class="boot-text">ANDROID</div>
+  <div class="boot-dots">
+    <span></span><span></span><span></span>
+  </div>
+</div>
+
+<!-- Material You Blobs -->
+<div class="blob-bg">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<!-- Android Status Bar -->
+<div class="status-bar">
+  <div class="left">
+    <span class="time" id="statusTime">9:41</span>
+  </div>
+  <div class="right">
+    <div class="signal-bars"><span></span><span></span><span></span><span></span></div>
+    <span style="font-size:10px;">5G</span>
+    <div class="battery"><div class="fill"></div></div>
+  </div>
+</div>
+
+<!-- App Bar -->
+<div class="app-bar">
+  <div class="hamburger"><span class="material-icons-round">menu</span></div>
+  <div class="app-bar-title">
+    <span class="live-dot"></span>
+    Alok.dev
+  </div>
+  <div class="actions">
+    <a class="action-btn" href="#contact"><span class="material-icons-round">mail</span></a>
+    <a class="action-btn" href="https://www.linkedin.com/in/aloks19" target="_blank"><span class="material-icons-round">open_in_new</span></a>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+  <div class="container">
+
+    <!-- Hero — Lock Screen -->
+    <section class="hero-lockscreen" id="home">
+      <div class="avatar-ring">
+        <div class="avatar">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V7H6v11zM3.5 7C2.67 7 2 7.67 2 8.5v7c0 .83.67 1.5 1.5 1.5S5 16.33 5 15.5v-7C5 7.67 4.33 7 3.5 7zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zM15.53 2.16l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0012 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31A5.81 5.81 0 006 6h12c0-1.52-.58-2.89-1.53-3.91h.06zM10 4H9V3h1v1zm5 0h-1V3h1v1z" fill="#3DDC84"/>
+          </svg>
+        </div>
+      </div>
+      <h1>Alok Kumar Singh</h1>
+      <div class="role-chip">
+        <span class="material-icons-round" style="font-size:18px;">android</span>
+        Senior Android Developer · 6+ Years
+      </div>
+      <p class="bio">
+        Building high-performance fintech apps serving 1M+ users.
+        Expert in Kotlin, Jetpack Compose, and KMM.
+        Crash-free rate champion. AI-powered workflow pioneer.
+      </p>
+
+      <!-- Quick Settings Tiles (Certs) -->
+      <div class="qs-tiles">
+        <div class="qs-tile">
+          <span class="material-icons-round">verified</span>
+          <span>Google Certified Android Dev</span>
+        </div>
+        <div class="qs-tile">
+          <span class="material-icons-round">code</span>
+          <span>HackerRank Problem Solving</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Metrics Widget -->
+    <section id="metrics">
+      <div class="widget reveal">
+        <div class="widget-header">
+          <div class="widget-title">
+            <span class="material-icons-round">analytics</span>
+            Performance Metrics
+          </div>
+          <div class="widget-badge">All passing ✓</div>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric-tile">
+            <span class="val">99.33%</span>
+            <span class="lbl">Crash-Free</span>
+            <span class="delta">▲ from 95%</span>
+          </div>
+          <div class="metric-tile">
+            <span class="val">1M+</span>
+            <span class="lbl">Users</span>
+            <span class="delta">active</span>
+          </div>
+          <div class="metric-tile">
+            <span class="val">-70%</span>
+            <span class="lbl">Deploy</span>
+            <span class="delta">automated</span>
+          </div>
+          <div class="metric-tile">
+            <span class="val">99.99%</span>
+            <span class="lbl">Notif Rate</span>
+            <span class="delta">▲ from 90%</span>
+          </div>
+          <div class="metric-tile">
+            <span class="val">3-5x</span>
+            <span class="lbl">Productivity</span>
+            <span class="delta">AI-assisted</span>
+          </div>
+          <div class="metric-tile">
+            <span class="val">15+</span>
+            <span class="lbl">PRs/Week</span>
+            <span class="delta">reviewed</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills Widget — App Grid -->
+    <section id="skills">
+      <div class="widget reveal">
+        <div class="widget-header">
+          <div class="widget-title">
+            <span class="material-icons-round">apps</span>
+            Tech Stack
+          </div>
+        </div>
+        <div class="skills-widget-grid">
+          <div class="skill-divider">Languages</div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#5c35cc,#7f52ff);">Kt</div><div class="app-name">Kotlin</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#e65100,#ff9800);">Jv</div><div class="app-name">Java</div></div>
+
+          <div class="skill-divider">Android</div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#2e7d32,#4caf50);">SDK</div><div class="app-name">Android</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#1565c0,#42a5f5);">JC</div><div class="app-name">Compose</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#283593,#5c6bc0);">KM</div><div class="app-name">KMM</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#00695c,#26a69a);">MD</div><div class="app-name">Material</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#00838f,#26c6da);">Co</div><div class="app-name">Coroutines</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#1565c0,#42a5f5);">Fl</div><div class="app-name">Flow</div></div>
+
+          <div class="skill-divider">Architecture</div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#2e7d32,#4caf50);">MV</div><div class="app-name">MVVM</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#00695c,#26a69a);">CA</div><div class="app-name">Clean Arch</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#283593,#5c6bc0);">DP</div><div class="app-name">Patterns</div></div>
+
+          <div class="skill-divider">Libraries</div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#c62828,#ef5350);">Hi</div><div class="app-name">Hilt</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#5c35cc,#7f52ff);">Kt</div><div class="app-name">Ktor</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#ff6f00,#ffc107);">Fb</div><div class="app-name">Firebase</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#e65100,#ff9800);">Cr</div><div class="app-name">Crashlytics</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#ad1457,#ec407a);">FC</div><div class="app-name">FCM</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#2e7d32,#4caf50);">Gr</div><div class="app-name">Gradle</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#c62828,#ef5350);">Gi</div><div class="app-name">Git</div></div>
+
+          <div class="skill-divider">Testing</div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#2e7d32,#4caf50);">JU</div><div class="app-name">JUnit</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#00695c,#26a69a);">Es</div><div class="app-name">Espresso</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#1565c0,#42a5f5);">Mo</div><div class="app-name">Mockito</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#00838f,#26c6da);">TD</div><div class="app-name">TDD</div></div>
+
+          <div class="skill-divider">AI Tools</div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#5c35cc,#7f52ff);">Cl</div><div class="app-name">Claude</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#1565c0,#42a5f5);">CP</div><div class="app-name">Copilot</div></div>
+          <div class="skill-app"><div class="icon-wrap" style="background:linear-gradient(135deg,#283593,#5c6bc0);">Cx</div><div class="app-name">Codex</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Experience — Notifications -->
+    <section id="experience">
+      <div class="widget reveal">
+        <div class="widget-header">
+          <div class="widget-title">
+            <span class="material-icons-round">notifications_active</span>
+            Experience
+          </div>
+          <div class="widget-badge">4 roles</div>
+        </div>
+
+        <div class="notif">
+          <div class="notif-icon">P</div>
+          <div class="notif-body">
+            <div class="n-time">2023 — Now</div>
+            <div class="n-role">Senior Android Developer</div>
+            <div class="n-company">Punch</div>
+            <ul>
+              <li>Built trading app + real-time charting for <span class="hl">1M+</span> users</li>
+              <li>Led end-to-end: arch → Compose → Play Store</li>
+              <li>Crash-free rate <span class="hl">95% → 99.33%</span></li>
+              <li>Migrated to <span class="hl">KMM</span> — shared Android & iOS logic</li>
+              <li><span class="hl">3-5x</span> productivity with AI workflows</li>
+              <li>Mentored 4-5 devs · <span class="hl">10-15</span> PRs/week</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="notif">
+          <div class="notif-icon">P</div>
+          <div class="notif-body">
+            <div class="n-time">2020 — 2023</div>
+            <div class="n-role">Android Developer</div>
+            <div class="n-company">Punch</div>
+            <ul>
+              <li>Notif delivery <span class="hl">90% → 99.99%</span></li>
+              <li>Shipped referral program for growth</li>
+              <li>CI/CD automation — <span class="hl">70% less</span> deploy</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="notif">
+          <div class="notif-icon">C</div>
+          <div class="notif-body">
+            <div class="n-time">Feb — May 2020</div>
+            <div class="n-role">Android Developer</div>
+            <div class="n-company">Cashify</div>
+            <ul>
+              <li>Profile module — info, addresses, photos</li>
+              <li>Device diagnostics: BT, Wi-Fi, SIM</li>
+              <li>Stability via systematic debugging</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="notif">
+          <div class="notif-icon">M</div>
+          <div class="notif-body">
+            <div class="n-time">Nov 2019 — Jan 2020</div>
+            <div class="n-role">Android Dev Trainee</div>
+            <div class="n-company">MountBlue Technologies</div>
+            <ul>
+              <li>Bootcamp — Java, MVVM, Retrofit, Dagger</li>
+              <li>CricBuzz clone & Movies DB app</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Projects — App Cards -->
+    <section id="projects">
+      <div class="widget reveal">
+        <div class="widget-header">
+          <div class="widget-title">
+            <span class="material-icons-round">play_arrow</span>
+            Published Apps
+          </div>
+        </div>
+        <div class="app-cards">
+          <div class="app-card">
+            <div class="app-card-banner">📈</div>
+            <div class="app-card-info">
+              <div class="app-card-icon">T</div>
+              <div class="app-card-text">
+                <div class="name">Trading App</div>
+                <div class="stars">4.8 <span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span> · 1M+</div>
+                <div class="desc">Real-time trading & financial charts</div>
+                <div class="tags"><span>Compose</span><span>Hilt</span><span>MVVM</span></div>
+                <a class="install-btn" href="#">Install</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-card">
+            <div class="app-card-banner">🔔</div>
+            <div class="app-card-info">
+              <div class="app-card-icon">A</div>
+              <div class="app-card-text">
+                <div class="name">Analysis App</div>
+                <div class="stars">4.7 <span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star_half</span></div>
+                <div class="desc">Financial analysis · 99.99% notif rate</div>
+                <div class="tags"><span>KMM</span><span>Firebase</span><span>FCM</span></div>
+                <a class="install-btn" href="#">Install</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-card">
+            <div class="app-card-banner">📱</div>
+            <div class="app-card-info">
+              <div class="app-card-icon">C</div>
+              <div class="app-card-text">
+                <div class="name">Cashify</div>
+                <div class="stars">4.5 <span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star_half</span></div>
+                <div class="desc">Profile & device diagnostics</div>
+                <div class="tags"><span>MVVM</span><span>Retrofit</span></div>
+                <a class="install-btn" href="#">Install</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-card">
+            <div class="app-card-banner">🏏</div>
+            <div class="app-card-info">
+              <div class="app-card-icon">C</div>
+              <div class="app-card-text">
+                <div class="name">CricBuzz Clone</div>
+                <div class="stars">4.3 <span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star</span><span class="material-icons-round">star_border</span></div>
+                <div class="desc">Live cricket scores</div>
+                <div class="tags"><span>Java</span><span>Dagger</span><span>Paging</span></div>
+                <a class="install-btn" href="#" style="background:var(--surface3);color:var(--text-bright);box-shadow:none;">View Code</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section id="education">
+      <div class="widget reveal">
+        <div class="widget-header">
+          <div class="widget-title">
+            <span class="material-icons-round">school</span>
+            Education
+          </div>
+        </div>
+        <div class="edu-row">
+          <div class="edu-icon">🎓</div>
+          <div>
+            <div class="degree">B.Tech</div>
+            <div class="school">Pranveer Singh Institute of Technology</div>
+            <div class="period">Aug 2014 — Jun 2018</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact">
+      <div class="widget reveal">
+        <div class="widget-header">
+          <div class="widget-title">
+            <span class="material-icons-round">contact_mail</span>
+            Contact
+          </div>
+        </div>
+        <div class="contact-list">
+          <div class="contact-row">
+            <div class="c-icon"><span class="material-icons-round">mail</span></div>
+            <div><div class="c-label">Email</div><div class="c-value"><a href="mailto:aloksingh191196@gmail.com">aloksingh191196@gmail.com</a></div></div>
+          </div>
+          <div class="contact-row">
+            <div class="c-icon"><span class="material-icons-round">phone</span></div>
+            <div><div class="c-label">Phone</div><div class="c-value">+91 7007405580</div></div>
+          </div>
+          <div class="contact-row">
+            <div class="c-icon"><span class="material-icons-round">location_on</span></div>
+            <div><div class="c-label">Location</div><div class="c-value">Bengaluru, India</div></div>
+          </div>
+          <div class="contact-row">
+            <div class="c-icon"><span class="material-icons-round">open_in_new</span></div>
+            <div><div class="c-label">LinkedIn</div><div class="c-value"><a href="https://www.linkedin.com/in/aloks19" target="_blank">linkedin.com/in/aloks19</a></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>Built with <span class="heart">💚</span> and Kotlin — 2026</footer>
+
+  </div>
+</div>
+
+<!-- FAB -->
+<a class="fab" href="#contact">
+  <span class="material-icons-round">mail</span>
+</a>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <a class="nav-item active" href="#home">
+    <span class="material-icons-round">home</span>
+    Home
+  </a>
+  <a class="nav-item" href="#skills">
+    <span class="material-icons-round">apps</span>
+    Skills
+  </a>
+  <a class="nav-item" href="#experience">
+    <span class="material-icons-round">work</span>
+    Experience
+  </a>
+  <a class="nav-item" href="#projects">
+    <span class="material-icons-round">play_arrow</span>
+    Apps
+  </a>
+  <a class="nav-item" href="#contact">
+    <span class="material-icons-round">person</span>
+    Contact
+  </a>
+</nav>
+<div class="home-indicator"></div>
+
+<script>
+// Live clock in status bar
+function updateTime() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes().toString().padStart(2, '0');
+  document.getElementById('statusTime').textContent = h + ':' + m;
+}
+updateTime();
+setInterval(updateTime, 30000);
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Bottom nav active state
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('section[id]');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 120;
+    if (window.scrollY >= top) current = section.id;
+  });
+
+  navItems.forEach(item => {
+    item.classList.remove('active');
+    if (item.getAttribute('href') === '#' + current) item.classList.add('active');
+  });
+});
+
+// Skill app bounce on scroll
+const skillsWidget = document.querySelector('.skills-widget-grid');
+const skillObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const apps = entry.target.querySelectorAll('.skill-app');
+      apps.forEach((app, i) => {
+        app.style.opacity = '0';
+        app.style.transform = 'scale(0.3)';
+        setTimeout(() => {
+          app.style.transition = 'opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+          app.style.opacity = '1';
+          app.style.transform = 'scale(1)';
+        }, i * 35);
+      });
+      skillObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.2 });
+
+if (skillsWidget) skillObserver.observe(skillsWidget);
+
+// Remove boot screen from DOM after animation
+setTimeout(() => {
+  document.querySelector('.boot-screen').remove();
+}, 3500);
+</script>
+</body>
+</html>
